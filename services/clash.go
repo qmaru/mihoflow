@@ -25,7 +25,6 @@ func (s *Service) Run(ctx context.Context) error {
 func (s *Service) collect(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.CollectEvery)
 	defer ticker.Stop()
-	s.poll(ctx)
 	for {
 		select {
 		case <-ctx.Done():

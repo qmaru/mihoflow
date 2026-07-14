@@ -16,6 +16,7 @@ type Config struct {
 	ListenAddr   string
 	ClashURL     string
 	ClashAPIKey  string
+	ClashTimeout time.Duration
 	DBPath       string
 	Debug        bool
 	CollectEvery time.Duration
@@ -84,6 +85,9 @@ type EventPayload struct {
 }
 
 func New(cfg Config) (*Service, error) {
+	if cfg.ClashTimeout <= 0 {
+		cfg.ClashTimeout = 5 * time.Second
+	}
 	if cfg.HistoryDays < 1 {
 		cfg.HistoryDays = 90
 	}
@@ -96,7 +100,7 @@ func New(cfg Config) (*Service, error) {
 	}
 	db.SetMaxOpenConns(1)
 	service := &Service{
-		cfg: cfg, db: db, client: &http.Client{Timeout: 900 * time.Millisecond}, date: today(),
+		cfg: cfg, db: db, client: &http.Client{Timeout: cfg.ClashTimeout}, date: today(),
 		connections: make(map[string]Connection), devices: make(map[string]*Device),
 		pendingClosed: make([]Connection, 0), clients: make(map[chan []byte]struct{}),
 	}
@@ -116,6 +120,7 @@ func New(cfg Config) (*Service, error) {
 	log.Printf("debug mode: %t", cfg.Debug)
 	log.Printf("clash url: %s", service.normalizeURL())
 	log.Printf("clash endpoint: GET %s/connections", service.normalizeURL())
+	log.Printf("clash request timeout: %s", cfg.ClashTimeout)
 	log.Printf("database path: %s", cfg.DBPath)
 	log.Printf("collect interval: %s", cfg.CollectEvery)
 	log.Printf("flush interval: %s", cfg.FlushEvery)

@@ -17,6 +17,7 @@ const (
 	defaultClashURL     = "http://127.0.0.1:9090"
 	defaultCollectEvery = time.Second
 	defaultFlushEvery   = 5 * time.Minute
+	defaultClashTimeout = 5 * time.Second
 	defaultHistoryDays  = 90
 	defaultCleanupDays  = 97
 )
@@ -29,6 +30,7 @@ func main() {
 		ListenAddr:   env("LISTEN_ADDR", defaultListenAddr),
 		ClashURL:     env("CLASH_URL", defaultClashURL),
 		ClashAPIKey:  env("CLASH_API_KEY", ""),
+		ClashTimeout: envDuration("CLASH_TIMEOUT", defaultClashTimeout),
 		DBPath:       env("DB_PATH", "mihoflow.db"),
 		Debug:        envBool("DEBUG", false),
 		CollectEvery: envDuration("COLLECT_INTERVAL", defaultCollectEvery),

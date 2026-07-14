@@ -7,6 +7,7 @@
 | `LISTEN_ADDR` | `:8080` | HTTP listen address |
 | `CLASH_URL` | `http://192.168.46.2:9090` | Clash/Mihomo API URL |
 | `CLASH_API_KEY` | empty | External Controller API key |
+| `CLASH_TIMEOUT` | `5s` | Clash HTTP request timeout |
 | `DB_PATH` | `mihoflow.db` | SQLite database path |
 | `DEBUG` | `false` | Enable debug logs |
 | `COLLECT_INTERVAL` | `1s` | `/connections` polling interval |

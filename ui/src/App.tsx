@@ -201,7 +201,7 @@ function App() {
               <div>
                 <p className="eyebrow">网络监测 / 总览</p>
                 <h1>流量概览</h1>
-                <p className="intro-copy">选择一个设备，进入它的流量详情。</p>
+                <p className="intro-copy">选择一个设备，查看流量详情。</p>
               </div>
               <div className="live-indicator">
                 <span />每 5 秒更新

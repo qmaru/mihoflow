@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import type { Connection, Device, HistoryRow } from "./types"
 import { bytes } from "./format"
 
@@ -31,7 +31,7 @@ export const Icon = ({
     activity: "📈",
     download: "⬇️",
     upload: "⬆️",
-    server: "🖥️",
+    server: "💻",
     clock: "🕒",
   }
   return (
@@ -54,22 +54,58 @@ export function SelectField<T extends string | number>({
   onChange: (value: T) => void
   ariaLabel: string
 }) {
+  const [open, setOpen] = useState(false)
+  const fieldRef = useRef<HTMLDivElement>(null)
+  const selected = options.find((option) => option.value === value)
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!fieldRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false)
+    }
+    document.addEventListener("mousedown", closeOnOutsideClick)
+    document.addEventListener("keydown", closeOnEscape)
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick)
+      document.removeEventListener("keydown", closeOnEscape)
+    }
+  }, [])
+
   return (
-    <select
-      className="field-select"
-      value={value}
-      onChange={(event) => {
-        const option = options.find((item) => String(item.value) === event.target.value)
-        if (option) onChange(option.value)
-      }}
-      aria-label={ariaLabel}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <div className="field-select" ref={fieldRef}>
+      <button
+        type="button"
+        className="field-select-trigger"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((visible) => !visible)}
+      >
+        <span>{selected?.label}</span>
+        <span className="field-select-caret" aria-hidden="true" />
+      </button>
+      {open ? (
+        <div className="field-select-menu" role="listbox" aria-label={ariaLabel}>
+          {options.map((option) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              className={option.value === value ? "selected" : ""}
+              key={option.value}
+              onClick={() => {
+                onChange(option.value)
+                setOpen(false)
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -287,8 +323,8 @@ export function ConnectionTable({
                 <small>{item.count} 条连接</small>
               </div>
               <div className="group-values">
-                <span className="traffic-up">↑ {bytes(item.upload)}</span>
-                <span className="traffic-down">↓ {bytes(item.download)}</span>
+                <span className="traffic-up">上传 {bytes(item.upload)}</span>
+                <span className="traffic-down">下载 {bytes(item.download)}</span>
               </div>
             </div>
           ))}
@@ -341,8 +377,8 @@ function ConnectionRows({ connections }: { connections: Connection[] }) {
                 <span className="rule-tag">{ruleLabel(item)}</span>
               </td>
               <td>
-                <span className="traffic-up">↑ {bytes(item.upload)}</span>
-                <span className="traffic-down">↓ {bytes(item.download)}</span>
+                <span className="traffic-up">上传 {bytes(item.upload)}</span>
+                <span className="traffic-down">下载 {bytes(item.download)}</span>
               </td>
               <td className="time">
                 {item.start
@@ -350,7 +386,7 @@ function ConnectionRows({ connections }: { connections: Connection[] }) {
                       hour: "2-digit",
                       minute: "2-digit",
                     })
-                  : "—"}
+                  : "暂无"}
               </td>
             </tr>
           ))}
@@ -391,7 +427,7 @@ export function ChainBreakdown({ connections }: { connections: Connection[] }) {
               <div className="chain-info">
                 <strong>{item.key}</strong>
                 <small>
-                  {item.count} 条连接 · {bytes(item.upload + item.download)}
+                  {item.count} 条连接，共 {bytes(item.upload + item.download)}
                 </small>
               </div>
               <div className="chain-meter">
@@ -400,8 +436,8 @@ export function ChainBreakdown({ connections }: { connections: Connection[] }) {
                 />
               </div>
               <div className="chain-total">
-                <span className="traffic-up">↑ {bytes(item.upload)}</span>
-                <span className="traffic-down">↓ {bytes(item.download)}</span>
+                <span className="traffic-up">上传 {bytes(item.upload)}</span>
+                <span className="traffic-down">下载 {bytes(item.download)}</span>
               </div>
             </div>
           ))}
@@ -443,7 +479,7 @@ export function HistoryPanel({
             <div
               className="history-bar"
               key={`${row.date}-${row.ip}`}
-              title={`${row.date} · ${bytes(row.upload + row.download)}`}
+              title={`${row.date}，共 ${bytes(row.upload + row.download)}`}
             >
               <div className="bar-stack">
                 <span style={{ height: `${Math.max((row.download / max) * 100, 2)}%` }} />

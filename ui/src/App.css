@@ -168,7 +168,7 @@
 .intro-copy {
   margin: 12px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .back-button {
@@ -287,7 +287,7 @@
   border-radius: 999px;
   background: var(--surface-muted);
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -303,20 +303,80 @@
 
 .field-select {
   min-width: 120px;
-  appearance: auto;
+  position: relative;
+}
+
+.field-select-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 39px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   border: 1px solid var(--line);
   border-radius: 7px;
-  padding: 8px 28px 8px 10px;
+  padding: 8px 12px;
   background: var(--surface-muted);
   color: var(--text);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
+  text-align: left;
+}
+
+.field-select-trigger:hover,
+.field-select-trigger:focus-visible {
+  border-color: var(--accent);
   outline: none;
 }
 
-.field-select:hover,
-.field-select:focus-visible {
-  border-color: var(--accent);
+.field-select-caret {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.field-select-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  width: max-content;
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 4px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgb(27 56 46 / 16%);
+}
+
+.field-select-menu button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  padding: 9px 10px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.field-select-menu button:hover,
+.field-select-menu button:focus-visible,
+.field-select-menu button.selected {
+  background: var(--accent-soft);
+  color: var(--accent);
+  outline: none;
+}
+
+.panel:has(.field-select) {
+  overflow: visible;
 }
 
 .device-grid {
@@ -355,7 +415,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .device-dot {
@@ -369,11 +429,11 @@
   display: block;
   margin-bottom: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .value {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -398,20 +458,20 @@ table {
 }
 
 th {
-  padding: 10px 22px;
+  padding: 12px 22px;
   background: var(--surface-muted);
   color: var(--muted);
   text-align: left;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 td {
-  padding: 14px 22px;
+  padding: 16px 22px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 14px;
   vertical-align: middle;
 }
 
@@ -421,7 +481,7 @@ td small,
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .host {
@@ -429,11 +489,12 @@ td small,
   max-width: 220px;
   overflow-wrap: anywhere;
   font-weight: 700;
+  font-size: 15px;
 }
 
 .chain {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .rule-tag {
@@ -443,7 +504,7 @@ td small,
   padding: 3px 6px;
   background: #fff2da;
   color: #8e6f31;
-  font-size: 10px;
+  font-size: 12px;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -455,9 +516,12 @@ td small,
 
 .traffic-up,
 .traffic-down {
-  display: block;
-  font-size: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
   font-weight: 700;
+  line-height: 1.45;
+  white-space: nowrap;
 }
 
 .traffic-down {
@@ -466,7 +530,7 @@ td small,
 
 .time {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .group-grid {
@@ -496,7 +560,7 @@ td small,
 .traffic-group strong {
   display: block;
   overflow-wrap: anywhere;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .group-values,
@@ -512,7 +576,7 @@ td small,
 
 .chain-row {
   display: grid;
-  grid-template-columns: minmax(170px, 1.2fr) 2fr 110px;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(120px, 2fr) minmax(145px, max-content);
   align-items: center;
   gap: 18px;
   padding: 15px 0;
@@ -525,10 +589,9 @@ td small,
 
 .chain-info strong {
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .chain-meter {
@@ -647,8 +710,97 @@ td small,
     flex-direction: column;
   }
 
+  .panel-heading {
+    align-items: flex-start;
+  }
+
+  .panel-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .footer {
     width: calc(100% - 32px);
+  }
+}
+
+@media (max-width: 700px) {
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  thead {
+    position: absolute;
+    overflow: hidden;
+    width: 1px;
+    height: 1px;
+    clip: rect(0 0 0 0);
+  }
+
+  tr {
+    padding: 16px 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  td {
+    padding: 7px 0;
+    border: 0;
+  }
+
+  td:not(:first-child) {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  td:nth-child(2)::before {
+    content: "链路";
+  }
+
+  td:nth-child(3)::before {
+    content: "规则";
+  }
+
+  td:nth-child(4)::before {
+    content: "流量";
+  }
+
+  td:nth-child(5)::before {
+    content: "开始时间";
+  }
+
+  td:not(:first-child)::before {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  td:nth-child(4) .traffic-up,
+  td:nth-child(4) .traffic-down {
+    grid-column: 2;
+  }
+
+  .host {
+    max-width: none;
+  }
+
+  .rule-tag {
+    max-width: none;
   }
 }
 
@@ -680,7 +832,17 @@ td small,
   }
 
   .panel-heading {
+    flex-wrap: wrap;
     padding: 17px 15px;
+  }
+
+  .panel-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .panel-actions .field-select {
+    flex: 1 1 140px;
   }
 
   .count-badge {
@@ -693,8 +855,16 @@ td small,
     padding: 14px 15px;
   }
 
+  .device-row .label {
+    font-size: 11px;
+  }
+
+  .device-row .value {
+    font-size: 13px;
+  }
+
   .device-name {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .group-grid {
@@ -707,8 +877,13 @@ td small,
   }
 
   .chain-row {
-    grid-template-columns: 1fr 90px;
+    grid-template-columns: minmax(0, 1fr) max-content;
     gap: 10px;
+    padding: 18px 0;
+  }
+
+  .chain-total {
+    min-width: 112px;
   }
 
   .chain-meter {

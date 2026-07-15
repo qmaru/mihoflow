@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import type { Connection, Device, HistoryRow } from "./types"
 import { bytes } from "./format"
 
@@ -124,15 +124,52 @@ export function DeviceTable({
   devices: Device[]
   onSelect: (ip: string) => void
 }) {
+  const [sortField, setSortField] = useState<
+    "ip" | "uploadToday" | "downloadToday" | "totalToday" | "activeConnections"
+  >("ip")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
   const orderedDevices = useMemo(
-    () => [...devices].sort((left, right) => compareIP(left.ip, right.ip)),
-    [devices],
+    () =>
+      [...devices].sort((left, right) => {
+        const result =
+          sortField === "ip"
+            ? compareIP(left.ip, right.ip)
+            : sortField === "totalToday"
+              ? left.uploadToday + left.downloadToday - (right.uploadToday + right.downloadToday)
+              : left[sortField] - right[sortField]
+        if (result !== 0) return sortDirection === "asc" ? result : -result
+        return compareIP(left.ip, right.ip)
+      }),
+    [devices, sortDirection, sortField],
   )
 
   return (
     <section className="panel">
       <PanelHeader eyebrow="实时状态" title="设备概览">
-        <span className="count-badge">点击设备进入详情</span>
+        <div className="panel-actions">
+          <span className="count-badge">点击设备进入详情</span>
+          <SelectField
+            value={sortField}
+            options={[
+              { value: "ip", label: "IP" },
+              { value: "uploadToday", label: "今日上传" },
+              { value: "downloadToday", label: "今日下载" },
+              { value: "totalToday", label: "今日流量" },
+              { value: "activeConnections", label: "连接数" },
+            ]}
+            onChange={setSortField}
+            ariaLabel="设备排序字段"
+          />
+          <SelectField
+            value={sortDirection}
+            options={[
+              { value: "asc", label: "升序" },
+              { value: "desc", label: "降序" },
+            ]}
+            onChange={setSortDirection}
+            ariaLabel="设备排序方向"
+          />
+        </div>
       </PanelHeader>
       {orderedDevices.length ? (
         <div className="device-grid">

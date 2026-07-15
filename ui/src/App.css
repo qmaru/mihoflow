@@ -427,9 +427,7 @@ td small,
 .host {
   display: block;
   max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-weight: 700;
 }
 
@@ -440,11 +438,14 @@ td small,
 
 .rule-tag {
   display: inline-block;
+  max-width: 240px;
   border-radius: 4px;
   padding: 3px 6px;
   background: #fff2da;
   color: #8e6f31;
   font-size: 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 :root[data-theme="dark"] .rule-tag {
@@ -487,11 +488,14 @@ td small,
   background: var(--surface-muted);
 }
 
+.traffic-group > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .traffic-group strong {
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-size: 12px;
 }
 

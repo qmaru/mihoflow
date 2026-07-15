@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 	"encoding/json"
+	"io/fs"
 	"log"
 	"net/http"
 	"strings"
@@ -29,6 +30,7 @@ type Service struct {
 	cfg    Config
 	db     *sql.DB
 	client *http.Client
+	ui     fs.FS
 
 	mu            sync.RWMutex
 	connections   map[string]Connection
@@ -84,7 +86,7 @@ type EventPayload struct {
 	Connections []Connection     `json:"connections"`
 }
 
-func New(cfg Config) (*Service, error) {
+func New(cfg Config, ui fs.FS) (*Service, error) {
 	if cfg.ClashTimeout <= 0 {
 		cfg.ClashTimeout = 5 * time.Second
 	}
@@ -100,7 +102,7 @@ func New(cfg Config) (*Service, error) {
 	}
 	db.SetMaxOpenConns(1)
 	service := &Service{
-		cfg: cfg, db: db, client: &http.Client{Timeout: cfg.ClashTimeout}, date: today(),
+		cfg: cfg, db: db, client: &http.Client{Timeout: cfg.ClashTimeout}, ui: ui, date: today(),
 		connections: make(map[string]Connection), devices: make(map[string]*Device),
 		pendingClosed: make([]Connection, 0), clients: make(map[chan []byte]struct{}),
 	}

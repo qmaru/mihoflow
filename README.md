@@ -1,5 +1,16 @@
 # Mihoflow
 
+## Build
+
+```shell
+# build ui
+cd ui
+pnpm build
+
+# build server
+go build
+```
+
 ## Environment variables
 
 | Variable | Default | Description |
@@ -21,6 +32,20 @@ The application does not load `.env` automatically. Load it before starting:
 source .env
 go run .
 ```
+
+## Embedded UI
+
+The Go binary embeds the Vite production build from `ui/dist`. Build the UI before
+building or running the backend:
+
+```bash
+cd ui
+pnpm build
+cd ..
+go run .
+```
+
+Open `http://127.0.0.1:8080/ui/`. The root path redirects to `/ui/`.
 
 ## API
 

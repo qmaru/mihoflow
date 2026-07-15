@@ -17,6 +17,16 @@ func (s *Service) serve(ctx context.Context) {
 	mux.HandleFunc("/api/connections", s.handleConnections)
 	mux.HandleFunc("/api/history", s.handleHistory)
 	mux.HandleFunc("/api/events", s.handleEvents)
+	if s.ui != nil {
+		uiHandler := http.FileServerFS(s.ui)
+		mux.Handle("/ui/", http.StripPrefix("/ui/", uiHandler))
+		mux.HandleFunc("/ui", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/ui/", http.StatusTemporaryRedirect)
+		})
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/ui/", http.StatusTemporaryRedirect)
+		})
+	}
 	server := &http.Server{Addr: s.cfg.ListenAddr, Handler: mux}
 	s.debugf("listening on %s, collecting %s/connections", server.Addr, s.normalizeURL())
 	go func() {

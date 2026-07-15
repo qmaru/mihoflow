@@ -43,29 +43,32 @@ type Service struct {
 }
 
 type Connection struct {
-	ID          string             `json:"id"`
-	Chains      []string           `json:"chains"`
-	ChainValue  string             `json:"chainValue"`
-	Upload      int64              `json:"upload"`
-	Download    int64              `json:"download"`
-	Metadata    ConnectionMetadata `json:"metadata"`
-	Rule        string             `json:"rule"`
-	RulePayload string             `json:"rulePayload"`
-	Start       string             `json:"start"`
-	RecordDate  string             `json:"recordDate,omitempty"`
-	ClosedAt    string             `json:"closedAt,omitempty"`
+	ID             string             `json:"id"`
+	Chains         []string           `json:"chains"`
+	ProviderChains []string           `json:"providerChains"`
+	ChainValue     string             `json:"chainValue"`
+	Upload         int64              `json:"upload"`
+	Download       int64              `json:"download"`
+	Metadata       ConnectionMetadata `json:"metadata"`
+	Rule           string             `json:"rule"`
+	RulePayload    string             `json:"rulePayload"`
+	Start          string             `json:"start"`
+	RecordDate     string             `json:"recordDate,omitempty"`
+	ClosedAt       string             `json:"closedAt,omitempty"`
 }
 
 type ConnectionMetadata struct {
-	DestinationIP   string `json:"destinationIP"`
-	DestinationPort string `json:"destinationPort"`
-	DNSMode         string `json:"dnsMode"`
-	Host            string `json:"host"`
-	Network         string `json:"network"`
-	ProcessPath     string `json:"processPath"`
-	SourceIP        string `json:"sourceIP"`
-	SourcePort      string `json:"sourcePort"`
-	Type            string `json:"type"`
+	DestinationIP     string `json:"destinationIP"`
+	DestinationPort   string `json:"destinationPort"`
+	DNSMode           string `json:"dnsMode"`
+	Host              string `json:"host"`
+	Network           string `json:"network"`
+	ProcessPath       string `json:"processPath"`
+	RemoteDestination string `json:"remoteDestination"`
+	SniffHost         string `json:"sniffHost"`
+	SourceIP          string `json:"sourceIP"`
+	SourcePort        string `json:"sourcePort"`
+	Type              string `json:"type"`
 }
 
 type Device struct {
@@ -147,10 +150,11 @@ func (s *Service) normalizeURL() string { return strings.TrimRight(s.cfg.ClashUR
 func (s *Service) initDB() error {
 	_, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS connection_details (
 		id TEXT PRIMARY KEY, record_date TEXT NOT NULL, closed_at TEXT NOT NULL DEFAULT '',
-		start TEXT NOT NULL DEFAULT '', chains TEXT NOT NULL DEFAULT '[]', chain_value TEXT NOT NULL DEFAULT '',
+		start TEXT NOT NULL DEFAULT '', chains TEXT NOT NULL DEFAULT '[]', provider_chains TEXT NOT NULL DEFAULT '[]', chain_value TEXT NOT NULL DEFAULT '',
 		upload INTEGER NOT NULL DEFAULT 0, download INTEGER NOT NULL DEFAULT 0,
 		destination_ip TEXT NOT NULL DEFAULT '', destination_port TEXT NOT NULL DEFAULT '', dns_mode TEXT NOT NULL DEFAULT '',
 		host TEXT NOT NULL DEFAULT '', network TEXT NOT NULL DEFAULT '', process_path TEXT NOT NULL DEFAULT '',
+		remote_destination TEXT NOT NULL DEFAULT '', sniff_host TEXT NOT NULL DEFAULT '',
 		source_ip TEXT NOT NULL DEFAULT '', source_port TEXT NOT NULL DEFAULT '', type TEXT NOT NULL DEFAULT '',
 		rule TEXT NOT NULL DEFAULT '', rule_payload TEXT NOT NULL DEFAULT ''
 	)`)
@@ -208,14 +212,15 @@ func (s *Service) flush() error {
 		return err
 	}
 	defer tx.Rollback()
-	stmt, err := tx.Prepare(`INSERT INTO connection_details (id, record_date, closed_at, start, chains, chain_value, upload, download, destination_ip, destination_port, dns_mode, host, network, process_path, source_ip, source_port, type, rule, rule_payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET record_date=excluded.record_date, closed_at=excluded.closed_at, start=excluded.start, chains=excluded.chains, chain_value=excluded.chain_value, upload=excluded.upload, download=excluded.download, destination_ip=excluded.destination_ip, destination_port=excluded.destination_port, dns_mode=excluded.dns_mode, host=excluded.host, network=excluded.network, process_path=excluded.process_path, source_ip=excluded.source_ip, source_port=excluded.source_port, type=excluded.type, rule=excluded.rule, rule_payload=excluded.rule_payload`)
+	stmt, err := tx.Prepare(`INSERT INTO connection_details (id, record_date, closed_at, start, chains, provider_chains, chain_value, upload, download, destination_ip, destination_port, dns_mode, host, network, process_path, remote_destination, sniff_host, source_ip, source_port, type, rule, rule_payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET record_date=excluded.record_date, closed_at=excluded.closed_at, start=excluded.start, chains=excluded.chains, provider_chains=excluded.provider_chains, chain_value=excluded.chain_value, upload=excluded.upload, download=excluded.download, destination_ip=excluded.destination_ip, destination_port=excluded.destination_port, dns_mode=excluded.dns_mode, host=excluded.host, network=excluded.network, process_path=excluded.process_path, remote_destination=excluded.remote_destination, sniff_host=excluded.sniff_host, source_ip=excluded.source_ip, source_port=excluded.source_port, type=excluded.type, rule=excluded.rule, rule_payload=excluded.rule_payload`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for _, c := range values {
 		chains, _ := json.Marshal(c.Chains)
-		if _, err = stmt.Exec(c.ID, c.RecordDate, c.ClosedAt, c.Start, string(chains), c.ChainValue, c.Upload, c.Download, c.Metadata.DestinationIP, c.Metadata.DestinationPort, c.Metadata.DNSMode, c.Metadata.Host, c.Metadata.Network, c.Metadata.ProcessPath, c.Metadata.SourceIP, c.Metadata.SourcePort, c.Metadata.Type, c.Rule, c.RulePayload); err != nil {
+		providerChains, _ := json.Marshal(c.ProviderChains)
+		if _, err = stmt.Exec(c.ID, c.RecordDate, c.ClosedAt, c.Start, string(chains), string(providerChains), c.ChainValue, c.Upload, c.Download, c.Metadata.DestinationIP, c.Metadata.DestinationPort, c.Metadata.DNSMode, c.Metadata.Host, c.Metadata.Network, c.Metadata.ProcessPath, c.Metadata.RemoteDestination, c.Metadata.SniffHost, c.Metadata.SourceIP, c.Metadata.SourcePort, c.Metadata.Type, c.Rule, c.RulePayload); err != nil {
 			return err
 		}
 	}
@@ -261,12 +266,15 @@ func scanConnections(rows *sql.Rows) ([]Connection, error) {
 	result := make([]Connection, 0)
 	for rows.Next() {
 		var c Connection
-		var chains string
-		if err := rows.Scan(&c.ID, &c.RecordDate, &c.ClosedAt, &c.Start, &chains, &c.ChainValue, &c.Upload, &c.Download, &c.Metadata.DestinationIP, &c.Metadata.DestinationPort, &c.Metadata.DNSMode, &c.Metadata.Host, &c.Metadata.Network, &c.Metadata.ProcessPath, &c.Metadata.SourceIP, &c.Metadata.SourcePort, &c.Metadata.Type, &c.Rule, &c.RulePayload); err != nil {
+		var chains, providerChains string
+		if err := rows.Scan(&c.ID, &c.RecordDate, &c.ClosedAt, &c.Start, &chains, &providerChains, &c.ChainValue, &c.Upload, &c.Download, &c.Metadata.DestinationIP, &c.Metadata.DestinationPort, &c.Metadata.DNSMode, &c.Metadata.Host, &c.Metadata.Network, &c.Metadata.ProcessPath, &c.Metadata.RemoteDestination, &c.Metadata.SniffHost, &c.Metadata.SourceIP, &c.Metadata.SourcePort, &c.Metadata.Type, &c.Rule, &c.RulePayload); err != nil {
 			return nil, err
 		}
 		if err := json.Unmarshal([]byte(chains), &c.Chains); err != nil {
 			c.Chains = []string{}
+		}
+		if err := json.Unmarshal([]byte(providerChains), &c.ProviderChains); err != nil {
+			c.ProviderChains = []string{}
 		}
 		result = append(result, c)
 	}

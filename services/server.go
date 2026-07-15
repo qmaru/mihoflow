@@ -62,7 +62,7 @@ func (s *Service) handleConnections(w http.ResponseWriter, r *http.Request) {
 	cutoff := dateDaysAgo(days - 1)
 	ip := r.URL.Query().Get("ip")
 
-	connectionSelect := `SELECT id, record_date, closed_at, start, chains, chain_value, upload, download, destination_ip, destination_port, dns_mode, host, network, process_path, source_ip, source_port, type, rule, rule_payload FROM connection_details`
+	connectionSelect := `SELECT id, record_date, closed_at, start, chains, provider_chains, chain_value, upload, download, destination_ip, destination_port, dns_mode, host, network, process_path, remote_destination, sniff_host, source_ip, source_port, type, rule, rule_payload FROM connection_details`
 	query := connectionSelect + ` WHERE record_date >= ?`
 	args := []any{cutoff}
 	if ip != "" {

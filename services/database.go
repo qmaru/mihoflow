@@ -119,6 +119,7 @@ func New(cfg Config, ui fs.FS) (*Service, error) {
 	}
 	log.Printf("mihoflow started")
 	log.Printf("server listen address: %s", cfg.ListenAddr)
+	log.Printf("server web: http://%s/ui", cfg.ListenAddr)
 	log.Printf("debug mode: %t", cfg.Debug)
 	log.Printf("clash url: %s", service.normalizeURL())
 	log.Printf("clash endpoint: GET %s/connections", service.normalizeURL())

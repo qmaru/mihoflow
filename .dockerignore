@@ -1,0 +1,15 @@
+.git
+
+.vscode
+.idea
+
+.DS_Store
+Thumbs.db
+
+**/node_modules
+**/dist
+
+**/*.test
+
+.env
+.env.*

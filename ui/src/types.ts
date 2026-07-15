@@ -13,6 +13,7 @@ export type Connection = {
   download: number
   chainValue: string
   rule: string
+  rulePayload: string
   start: string
   closedAt?: string
   metadata: {

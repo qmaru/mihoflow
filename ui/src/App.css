@@ -93,18 +93,18 @@
   font-weight: 700;
 }
 
-.connection-state>span,
-.footer-status>span,
-.live-indicator>span {
+.connection-state > span,
+.footer-status > span,
+.live-indicator > span {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #a3aea9;
 }
 
-.connection-state.online>span,
-.footer-status>span,
-.live-indicator>span {
+.connection-state.online > span,
+.footer-status > span,
+.live-indicator > span {
   background: var(--accent);
 }
 
@@ -633,8 +633,8 @@ td small,
     grid-template-columns: 1.4fr 1fr 1fr;
   }
 
-  .device-row>div:nth-child(4),
-  .device-row>div:nth-child(5) {
+  .device-row > div:nth-child(4),
+  .device-row > div:nth-child(5) {
     display: none;
   }
 

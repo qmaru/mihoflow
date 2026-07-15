@@ -3,7 +3,12 @@ import type { Connection, Device, HistoryRow } from "./types"
 import { bytes } from "./format"
 
 const chainLabel = (value: string) => value.replace(/\s*->\s*/g, " / ")
+const ruleLabel = (item: Pick<Connection, "rule" | "rulePayload">) => {
+  const name = item.rule || "未识别规则"
+  return item.rulePayload ? `${name} / ${item.rulePayload}` : name
+}
 const processLabel = (value: string) => value.split(/[\\/]/).pop() || value
+const connId = (id: string) => id.replace(/-/g, "").slice(-12)
 
 const compareIP = (left: string, right: string) => {
   const leftParts = left.split(".").map(Number)
@@ -234,11 +239,11 @@ export function ConnectionTable({
     connections.forEach((item) => {
       const key =
         group === "host"
-          ? item.metadata.host || item.metadata.destinationIP || "未解析目标"
+          ? item.metadata.host || item.metadata.destinationIP || "无法解析"
           : group === "process"
             ? processLabel(item.metadata.processPath || "未识别进程")
             : group === "rule"
-              ? item.rule || "MATCH"
+              ? ruleLabel(item)
               : chainLabel(item.chainValue || "直连")
       const old = result.get(key) || { key, upload: 0, download: 0, count: 0 }
       result.set(key, {
@@ -313,7 +318,8 @@ function ConnectionRows({ connections }: { connections: Connection[] }) {
             <tr key={item.id}>
               <td>
                 <span className="host">
-                  {item.metadata.host || item.metadata.destinationIP || "未解析目标"}
+                  <small>id-{connId(item.id)}</small>
+                  {item.metadata.host || item.metadata.destinationIP || `无法解析`}
                 </span>
                 {item.metadata.host && item.metadata.destinationIP ? (
                   <small>{item.metadata.destinationIP}</small>
@@ -332,7 +338,7 @@ function ConnectionRows({ connections }: { connections: Connection[] }) {
                 <span className="chain">{chainLabel(item.chainValue || "直连")}</span>
               </td>
               <td>
-                <span className="rule-tag">{item.rule || "MATCH"}</span>
+                <span className="rule-tag">{ruleLabel(item)}</span>
               </td>
               <td>
                 <span className="traffic-up">↑ {bytes(item.upload)}</span>

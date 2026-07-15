@@ -50,9 +50,16 @@ func (s *Service) handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	days := queryDays(r, s.cfg.HistoryDays, s.cfg.CleanupDays)
 	cutoff := dateDaysAgo(days - 1)
+	ip := r.URL.Query().Get("ip")
 
 	connectionSelect := `SELECT id, record_date, closed_at, start, chains, chain_value, upload, download, destination_ip, destination_port, dns_mode, host, network, process_path, source_ip, source_port, type, rule, rule_payload FROM connection_details`
-	rows, err := s.db.Query(connectionSelect+` WHERE record_date >= ? ORDER BY record_date DESC, start DESC`, cutoff)
+	query := connectionSelect + ` WHERE record_date >= ?`
+	args := []any{cutoff}
+	if ip != "" {
+		query += ` AND source_ip = ?`
+		args = append(args, ip)
+	}
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		http.Error(w, "database error", 500)
 		return
@@ -63,7 +70,43 @@ func (s *Service) handleConnections(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "database error", 500)
 		return
 	}
-	writeJSON(w, result)
+	writeJSON(w, s.mergeConnectionDetails(result, cutoff, ip))
+}
+
+func (s *Service) mergeConnectionDetails(records []Connection, cutoff, ip string) []Connection {
+	merged := make(map[string]Connection, len(records))
+	for _, c := range records {
+		merged[c.ID] = c
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, source := range []map[string]Connection{s.connections, connectionSliceToMap(s.pendingClosed)} {
+		for id, c := range source {
+			if c.RecordDate < cutoff || (ip != "" && c.Metadata.SourceIP != ip) {
+				continue
+			}
+			merged[id] = c
+		}
+	}
+	result := make([]Connection, 0, len(merged))
+	for _, c := range merged {
+		result = append(result, c)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].RecordDate == result[j].RecordDate {
+			return result[i].Start > result[j].Start
+		}
+		return result[i].RecordDate > result[j].RecordDate
+	})
+	return result
+}
+
+func connectionSliceToMap(values []Connection) map[string]Connection {
+	result := make(map[string]Connection, len(values))
+	for _, c := range values {
+		result[c.ID] = c
+	}
+	return result
 }
 
 func (s *Service) handleHistory(w http.ResponseWriter, r *http.Request) {

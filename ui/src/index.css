@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Noto Sans SC", "Noto Color Emoji", sans-serif;
+  color: #17211f;
+  background: #f5f7f6;
+  font-optical-sizing: auto;
+  font-weight: 100 900;
+  font-style: normal;
+  text-rendering: optimizeLegibility;
+}
+
+:root[data-theme="dark"] {
+  color: #e4ebe8;
+  background: #111716;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Noto Sans SC", "Noto Color Emoji", sans-serif !important;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}

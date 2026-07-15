@@ -1,0 +1,4 @@
+*.json
+*.jsonc
+*.html
+src/qmeta/lab/v1/*.ts

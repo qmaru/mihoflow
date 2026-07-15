@@ -1,0 +1,29 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    // Approximate maximum line length
+    "printWidth": 100,
+    // Number of spaces per indentation level
+    "tabWidth": 2,
+    // Use spaces instead of tabs for indentation (false) or tabs (true)
+    "useTabs": false,
+    // Whether to add semicolons at the end of statements
+    "semi": false,
+    // Use single quotes (true) or double quotes (false) for strings
+    "singleQuote": false,
+    // Quote object property names only when necessary
+    "quoteProps": "as-needed",
+    // Add spaces inside object literal braces { and }
+    "bracketSpacing": true,
+    // For multi-line HTML / JSX / Vue tags, place > at the end of the last line instead of on a new line
+    "bracketSameLine": false,
+    // Always add parentheses to arrow function parameters (x) => x instead of x => x
+    "arrowParens": "always",
+    // Add trailing commas where possible in multi-line structures (arrays, objects, parameter lists, etc.)
+    "trailingComma": "all",
+    // Whether to wrap prose content such as Markdown
+    "proseWrap": "preserve",
+    // Whether to format embedded languages (for example, HTML / CSS / JS inside template strings)
+    "embeddedLanguageFormatting": "auto",
+    // Use LF for line endings
+    "endOfLine": "lf"
+}

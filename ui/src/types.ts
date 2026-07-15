@@ -20,6 +20,9 @@ export type Connection = {
     host: string
     destinationIP: string
     network: string
+    processPath: string
+    remoteDestination: string
+    sniffHost: string
     type: string
   }
 }

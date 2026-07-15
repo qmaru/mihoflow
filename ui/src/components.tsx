@@ -3,6 +3,7 @@ import type { Connection, Device, HistoryRow } from "./types"
 import { bytes } from "./format"
 
 const chainLabel = (value: string) => value.replace(/\s*->\s*/g, " / ")
+const processLabel = (value: string) => value.split(/[\\/]/).pop() || value
 
 const compareIP = (left: string, right: string) => {
   const leftParts = left.split(".").map(Number)
@@ -174,6 +175,7 @@ export function DeviceTable({
 const groupLabels: Record<string, string> = {
   all: "全部连接",
   host: "按域名",
+  process: "按进程",
   rule: "按规则",
   chain: "按链路",
 }
@@ -195,10 +197,12 @@ export function ConnectionTable({
     connections.forEach((item) => {
       const key =
         group === "host"
-          ? item.metadata.host || "未解析主机"
-          : group === "rule"
-            ? item.rule || "MATCH"
-            : chainLabel(item.chainValue || "直连")
+          ? item.metadata.host || item.metadata.sniffHost || "未解析主机"
+          : group === "process"
+            ? processLabel(item.metadata.processPath || "未识别进程")
+            : group === "rule"
+              ? item.rule || "MATCH"
+              : chainLabel(item.chainValue || "直连")
       const old = result.get(key) || { key, upload: 0, download: 0, count: 0 }
       result.set(key, {
         key,
@@ -271,8 +275,16 @@ function ConnectionRows({ connections }: { connections: Connection[] }) {
           {connections.map((item) => (
             <tr key={item.id}>
               <td>
-                <span className="host">{item.metadata.host || "未解析主机"}</span>
+                <span className="host">
+                  {item.metadata.host || item.metadata.sniffHost || "未解析主机"}
+                </span>
                 <small>{item.metadata.destinationIP}</small>
+                {item.metadata.remoteDestination ? (
+                  <small>远端：{item.metadata.remoteDestination}</small>
+                ) : null}
+                {item.metadata.sniffHost && item.metadata.sniffHost !== item.metadata.host ? (
+                  <small>嗅探：{item.metadata.sniffHost}</small>
+                ) : null}
               </td>
               <td>
                 <span className="chain">{chainLabel(item.chainValue || "直连")}</span>

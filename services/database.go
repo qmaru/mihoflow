@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type Config struct {
@@ -96,7 +96,7 @@ func New(cfg Config, ui fs.FS) (*Service, error) {
 	if cfg.CleanupDays < cfg.HistoryDays {
 		cfg.CleanupDays = 97
 	}
-	db, err := sql.Open("sqlite3", cfg.DBPath)
+	db, err := sql.Open("sqlite", cfg.DBPath)
 	if err != nil {
 		return nil, err
 	}

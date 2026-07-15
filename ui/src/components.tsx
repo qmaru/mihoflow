@@ -174,7 +174,7 @@ export function DeviceTable({
 
 const groupLabels: Record<string, string> = {
   all: "全部连接",
-  host: "按域名",
+  host: "按目的地",
   process: "按进程",
   rule: "按规则",
   chain: "按链路",
@@ -197,7 +197,7 @@ export function ConnectionTable({
     connections.forEach((item) => {
       const key =
         group === "host"
-          ? item.metadata.host || item.metadata.sniffHost || "未解析主机"
+          ? item.metadata.host || item.metadata.destinationIP || "未解析目标"
           : group === "process"
             ? processLabel(item.metadata.processPath || "未识别进程")
             : group === "rule"
@@ -276,13 +276,18 @@ function ConnectionRows({ connections }: { connections: Connection[] }) {
             <tr key={item.id}>
               <td>
                 <span className="host">
-                  {item.metadata.host || item.metadata.sniffHost || "未解析主机"}
+                  {item.metadata.host || item.metadata.destinationIP || "未解析目标"}
                 </span>
-                <small>{item.metadata.destinationIP}</small>
-                {item.metadata.remoteDestination ? (
-                  <small>远端：{item.metadata.remoteDestination}</small>
+                {item.metadata.host && item.metadata.destinationIP ? (
+                  <small>{item.metadata.destinationIP}</small>
                 ) : null}
-                {item.metadata.sniffHost && item.metadata.sniffHost !== item.metadata.host ? (
+                {item.metadata.remoteDestination &&
+                item.metadata.remoteDestination !== item.metadata.destinationIP ? (
+                  <small>目标：{item.metadata.remoteDestination}</small>
+                ) : null}
+                {item.metadata.sniffHost &&
+                item.metadata.sniffHost !== item.metadata.host &&
+                item.metadata.sniffHost !== item.metadata.destinationIP ? (
                   <small>嗅探：{item.metadata.sniffHost}</small>
                 ) : null}
               </td>

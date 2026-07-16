@@ -120,18 +120,17 @@ func New(cfg Config, ui fs.FS) (*Service, error) {
 	if err := service.cleanup(); err != nil {
 		log.Printf("startup cleanup: %v", err)
 	}
-	log.Printf("mihoflow started")
-	log.Printf("server listen address: %s", cfg.ListenAddr)
-	log.Printf("server web: http://%s/ui", cfg.ListenAddr)
-	log.Printf("debug mode: %t", cfg.Debug)
+	log.Printf("mihoflow started (DEBUG=%t)", cfg.Debug)
+	log.Printf("server api: %s", cfg.ListenAddr)
+	log.Printf("server web: http://%s", cfg.ListenAddr)
 	log.Printf("clash url: %s", service.normalizeURL())
-	log.Printf("clash endpoint: GET %s/connections", service.normalizeURL())
 	log.Printf("clash request timeout: %s", cfg.ClashTimeout)
 	log.Printf("database path: %s", cfg.DBPath)
-	log.Printf("collect interval: %s", cfg.CollectEvery)
-	log.Printf("flush interval: %s", cfg.FlushEvery)
-	log.Printf("history retention: %d days", cfg.HistoryDays)
-	log.Printf("cleanup retention: %d days", cfg.CleanupDays)
+	log.Println("config:")
+	log.Printf("  -- collect interval: %s", cfg.CollectEvery)
+	log.Printf("  -- flush interval: %s", cfg.FlushEvery)
+	log.Printf("  -- history retention: %d days", cfg.HistoryDays)
+	log.Printf("  -- cleanup retention: %d days", cfg.CleanupDays)
 	return service, nil
 }
 

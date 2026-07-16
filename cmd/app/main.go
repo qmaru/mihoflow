@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"embed"
 	"io/fs"
 	"log"
 	"os"
@@ -11,11 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"mihoflow/assets"
 	"mihoflow/services"
 )
-
-//go:embed ui/dist
-var uiAssets embed.FS
 
 const (
 	defaultListenAddr   = "127.0.0.1:8080"
@@ -44,7 +41,7 @@ func main() {
 		CleanupDays:  envInt("CLEANUP_DAYS", defaultCleanupDays),
 	}
 
-	uiFS, err := fs.Sub(uiAssets, "ui/dist")
+	uiFS, err := fs.Sub(assets.UIEmbed, "dist")
 	if err != nil {
 		log.Fatal(err)
 	}
